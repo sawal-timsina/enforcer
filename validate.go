@@ -23,114 +23,117 @@ func Validate(req interface{}) []string {
 		field := t.Field(i)
 		enforceTag := field.Tag.Get("enforce")
 
-		if enforceTag != "" {
-			fieldValue := v.Field(i)
-			fieldType := fieldValue.Type()
-			fieldString := fieldValue.String()
-			enforceOpts := strings.Split(enforceTag, " ")
+		if enforceTag == "" {
+			return
+		}
+		
+		fieldValue := v.Field(i)
+		fieldType := fieldValue.Type()
+		fieldString := fieldValue.String()
+		enforceOpts := strings.Split(enforceTag, ";")
 
-			for _, opt := range enforceOpts {
-				switch {
-				case opt == "required":
-					err := enforcements.HandleRequired(fieldValue, field.Name)
-					if err != "" {
-						errors = append(errors, err)
-					}
-				case strings.HasPrefix(opt, "between"):
-					if fieldType.Kind() == reflect.Int {
-						err := enforcements.HandleBetweenInt(fieldValue.Int(), field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else if fieldType.Kind() == reflect.String {
-						err := enforcements.HandleBetweenStr(fieldString, field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else {
-						errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
-					}
-				case strings.HasPrefix(opt, "min"):
-					if fieldType.Kind() == reflect.Int {
-						err := enforcements.HandleMinInt(fieldValue.Int(), field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else if fieldType.Kind() == reflect.String {
-						err := enforcements.HandleMinStr(fieldString, field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else {
-						errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
-					}
-				case strings.HasPrefix(opt, "max"):
-					if fieldType.Kind() == reflect.Int {
-						err := enforcements.HandleMaxInt(fieldValue.Int(), field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else if fieldType.Kind() == reflect.String {
-						err := enforcements.HandleMaxStr(fieldString, field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else {
-						errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
-					}
-				case strings.HasPrefix(opt, "wordCount"):
-					err := enforcements.HandleWordCount(fieldString, field.Name, opt)
-					if err != "" {
-						errors = append(errors, err)
-					}
-				case strings.HasPrefix(opt, "match"):
-					err := enforcements.HandleMatch(fieldString, field.Name, opt)
-					if err != "" {
-						errors = append(errors, err)
-					}
-				case strings.HasPrefix(opt, "enum"):
-					if fieldType.Kind() == reflect.Int {
-						err := enforcements.HandleEnumIntOrFloat(fieldValue.Int(), field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else if fieldType.Kind() == reflect.Float32 || fieldType.Kind() == reflect.Float64 {
-						err := enforcements.HandleEnumIntOrFloat(fieldValue.Float(), field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else if fieldType.Kind() == reflect.String {
-						err := enforcements.HandleEnumStr(fieldString, field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else {
-						errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
-					}
-				case strings.HasPrefix(opt, "exclude"):
-					if fieldType.Kind() == reflect.Int {
-						err := enforcements.HandleExcludeIntOrFloat(fieldValue.Int(), field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else if fieldType.Kind() == reflect.Float32 || fieldType.Kind() == reflect.Float64 {
-						err := enforcements.HandleExcludeIntOrFloat(fieldValue.Float(), field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else if fieldType.Kind() == reflect.String {
-						err := enforcements.HandleExcludeStr(fieldString, field.Name, opt)
-						if err != "" {
-							errors = append(errors, err)
-						}
-					} else {
-						errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
-					}
-					// Add additional handlers for other enforcements as required
-					// ...
+		for _, opt := range enforceOpts {
+			switch {
+			case opt == "required":
+				err := enforcements.HandleRequired(fieldValue, field.Name)
+				if err != "" {
+					errors = append(errors, err)
 				}
+			case strings.HasPrefix(opt, "between"):
+				if fieldType.Kind() == reflect.Int {
+					err := enforcements.HandleBetweenInt(fieldValue.Int(), field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else if fieldType.Kind() == reflect.String {
+					err := enforcements.HandleBetweenStr(fieldString, field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else {
+					errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
+				}
+			case strings.HasPrefix(opt, "min"):
+				if fieldType.Kind() == reflect.Int {
+					err := enforcements.HandleMinInt(fieldValue.Int(), field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else if fieldType.Kind() == reflect.String {
+					err := enforcements.HandleMinStr(fieldString, field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else {
+					errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
+				}
+			case strings.HasPrefix(opt, "max"):
+				if fieldType.Kind() == reflect.Int {
+					err := enforcements.HandleMaxInt(fieldValue.Int(), field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else if fieldType.Kind() == reflect.String {
+					err := enforcements.HandleMaxStr(fieldString, field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else {
+					errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
+				}
+			case strings.HasPrefix(opt, "wordCount"):
+				err := enforcements.HandleWordCount(fieldString, field.Name, opt)
+				if err != "" {
+					errors = append(errors, err)
+				}
+			case strings.HasPrefix(opt, "match"):
+				err := enforcements.HandleMatch(fieldString, field.Name, opt)
+				if err != "" {
+					errors = append(errors, err)
+				}
+			case strings.HasPrefix(opt, "enum"):
+				if fieldType.Kind() == reflect.Int {
+					err := enforcements.HandleEnumIntOrFloat(fieldValue.Int(), field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else if fieldType.Kind() == reflect.Float32 || fieldType.Kind() == reflect.Float64 {
+					err := enforcements.HandleEnumIntOrFloat(fieldValue.Float(), field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else if fieldType.Kind() == reflect.String {
+					err := enforcements.HandleEnumStr(fieldString, field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else {
+					errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
+				}
+			case strings.HasPrefix(opt, "exclude"):
+				if fieldType.Kind() == reflect.Int {
+					err := enforcements.HandleExcludeIntOrFloat(fieldValue.Int(), field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else if fieldType.Kind() == reflect.Float32 || fieldType.Kind() == reflect.Float64 {
+					err := enforcements.HandleExcludeIntOrFloat(fieldValue.Float(), field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else if fieldType.Kind() == reflect.String {
+					err := enforcements.HandleExcludeStr(fieldString, field.Name, opt)
+					if err != "" {
+						errors = append(errors, err)
+					}
+				} else {
+					errors = append(errors, fmt.Sprintf("Unsupported type for field '%s'", field.Name))
+				}
+				// Add additional handlers for other enforcements as required
+				// ...
 			}
 		}
+		
 	}
 
 	return errors
