@@ -148,6 +148,7 @@ func getTimeSetValue(t string) (time.Duration, error) {
 	return time.Duration(duration) * shift, nil
 }
 
+
 func getDefaultValue(tagValue string) string {
 	defaultValue := ""
 	// if strings.Contains(tagValue, "'") {
@@ -159,8 +160,9 @@ func getDefaultValue(tagValue string) string {
 	// 		fmt.Println(result)
 	// 	}
 	// }
-	defaultValue = strings.Split(tagValue, ":")[1]
+	defaultValue = tagValue[strings.Index(tagValue, ":")+1:]
 	return strings.TrimSpace(defaultValue)
 	// return strings.Split(defaultValue, " ")[0]
 	// TODO: this can mess things up
 }
+
