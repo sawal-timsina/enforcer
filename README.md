@@ -27,7 +27,7 @@ go get -u github.com/rrojan/enforcer
 E.g.: `name` is a *required* field *between* 2-64 chars, and should be *"Spaced and Cased"*
 ```
 type myStruct struct {
-  name string `enforce:"required between:2,64 matches:^[A-Z][a-z]+(?: [A-Z][a-z]+)*"`
+  name string `enforce:"required;between:2,64;matches:^[A-Z][a-z]+(?: [A-Z][a-z]+)*"`
 }
 ```
 
@@ -70,25 +70,25 @@ type myStruct struct {
 ```
 type SignupReq struct {
   // Name -> Enforce "required" and length "between" 2 chars and 10 chars
-  Name  string    `json:"name"     enforce:"required between:2,10"`
+  Name  string    `json:"name"     enforce:"required;between:2,10"`
   
   // Email -> Enforce "required" and pattern "match" for email
-  Email string    `json:"email"    enforce:"required match:email"`
+  Email string    `json:"email"    enforce:"required;match:email"`
   
   // Phone -> Enforce pattern "match" for custom regex
   Phone string    `json:"phone"    enforce:"match:^[0-9\\-]{7,12}$"`
   
   // Age -> Enforce "min" and "max" signup age (number) to be in range 18-100 (we can use `between` for this as well)
-  Age int         `json:"age"      enforce:"min:18 max:100"`
+  Age int         `json:"age"      enforce:"min:18;max:100"`
   
   // UserType -> Enforce "enum" which lets the value be "admin" or "user"
-  UserType string `json:"type"     enforce:"required enum:admin,user"`
+  UserType string `json:"type"     enforce:"required;enum:admin,user"`
   
   // Bio -> Minimum of 3 "wordCount", maximum of 150, and a max" 256 character limit
-  Bio string      `json:"bio"      enforce:"wordCount:3,150 max:256"
+  Bio string      `json:"bio"      enforce:"wordCount:3,150;max:256"
   
   // Password -> Enforce "required", "min" char limit, "max" char limit and "match" for password validity
-  Password string `json:"password" enforce:"required match:password"`
+  Password string `json:"password" enforce:"required;match:password"`
 }
 ```
 
@@ -120,8 +120,8 @@ Enforcer allows you to set default values for struct fields. Default values take
 type User struct {
     Email     string `enforce:"required"`
     Username  string `enforce:"default:Anonymous"`
-    UserType  int    `enforce:"enum:0,1,2 default:0"
-    Score     float  `enforce:"default:5.0 between:0,10"`
+    UserType  int    `enforce:"enum:0,1,2;default:0"
+    Score     float  `enforce:"default:5.0;between:0,10"`
 }
 ```
 
@@ -133,21 +133,19 @@ errors := enforcer.Validate(&c) // Note we are using '&'
 ```
 
 ### Setting Default Time
-Time can be set to a custom value by default in the format "YYYY-MM-DD HH;MM;SS +TZHH:TZMM"
+Time can be set to a custom value by default in the format "YYYY-MM-DD HH:MM:SS +TZHH:TZMM"
 
 You can also set default to the current time using timeNow. Time before and after current date can be done using a semantic addition like `timeNow-1_day` or `timeNow+10_days`
 
 ```
 type Coupon struct {
-    ValidFrom    time.Time  `enforce:"default:2023-06-15 00;00;00 +5;45"`
+    ValidFrom    time.Time  `enforce:"default:2023-06-15 00:00:00 +5:45"`
     ActivatedAt  time.Time  `enforce:"default:timeNow"`
     NotifyAt     time.Time  `enforce:"default:timeNow+1_minute"`
-    NextCoupon   time.Time `enforce:"default:timeNow+30_minutes"`
+    NextCoupon   time.Time  `enforce:"default:timeNow+30_minutes"`
     ExpiresAt    time.Time  `enforce:"default:timeNow+5_days"`
 }
 ```
-
-Note that you must use semicolons `;` instead of `:` while referring to time and timezone offsets because of the way tag parsing in Go works.
 
 ### Prohibited Fields
 
@@ -156,10 +154,10 @@ There are certain cases where a field input must never be binded from user input
 ```
 type User struct {
     Username  string  `enforce:"required"`
-    Password  string  `enforce:"required match:password"`
+    Password  string  `enforce:"required;match:password"`
 
     AuthUID   string  `enforce:"prohibit"` // Even if user provides the `AuthUID` field, it will be reset to null value
-    UserType  string  `enforce:"prohibit default:user enum:user,admin"` // Using prohibit means that User won't be able to override default
+    UserType  string  `enforce:"prohibit;default:user;enum:user,admin"` // Using prohibit means that User won't be able to override default
 }
 ```
 
@@ -173,10 +171,10 @@ Use `custom:` and `enforcer.CustomValidator` to run multiple custom validators l
 ```
 type ProductReq struct {
   // Enforce a `productTitleTemplate` validation for title
-  Title       string `enforce:"required custom:productTitleTemplate"`
+  Title       string `enforce:"required;custom:productTitleTemplate"`
   
   // Enforce multiple custom validators for price by chaining it with a comma
-  Price       int    `enforce:"required custom:isNotOverpriced,canUserSetPrice min:1000"`
+  Price       int    `enforce:"required;custom:isNotOverpriced,canUserSetPrice;min:1000"`
 
   // 0 -> Draft, 1 -> Published
   IsPublished int    `enforce:"enum:0,1"`
@@ -231,9 +229,9 @@ Use ``enforce:"... default:someValue ..."`` to add a default value in case data 
 
 ```
 type User struct {
-  Name      string    `enforce:"required between:2,32"`
-  UserType  string    `enforce:"default:user enum:admin,user"`
-  IsActive  int       `enforce:"default:1 enum:0,1"
+  Name      string    `enforce:"required;between:2,32"`
+  UserType  string    `enforce:"default:user;enum:admin,user"`
+  IsActive  int       `enforce:"default:1;enum:0,1"
 }
 ```
 #### Applying the validation and setting defaults
@@ -253,7 +251,7 @@ While not often used, variable validation can be performed by using the `enforce
 
 ```
 myAge := 23
-errors = enforcer.ValidateVar(myAge, "min:18 max:100")
+errors = enforcer.ValidateVar(myAge, "min:18;max:100")
 ```
 
 ### Example Projects
