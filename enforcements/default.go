@@ -85,7 +85,6 @@ func ApplyDefaults(v interface{}) error {
 			if fieldValue.Type() == reflect.TypeOf(time.Time{}) {
 				if fieldValue.Interface().(time.Time).IsZero() {
 					defaultValue := getDefaultValue(tagValue)
-					defaultValue = strings.ReplaceAll(defaultValue, ";", ":")
 					defaultTime := time.Time{}
 					var err error
 					if strings.Contains(defaultValue, "timeNow") {
